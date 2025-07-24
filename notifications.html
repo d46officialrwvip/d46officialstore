@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <title>Notifications</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+  <!-- Particles.js -->
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Poppins', sans-serif;
+      background: #111;
+      color: #fff;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    #particles-js {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 2rem 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      color: #fff;
+    }
+
+    .note {
+      background: rgba(30, 30, 30, 0.95);
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    }
+
+    .note strong {
+      font-size: 1rem;
+    }
+
+    .note-time {
+      font-size: 0.8rem;
+      color: #aaa;
+      margin-top: 5px;
+    }
+
+    @media (max-width: 500px) {
+      h2 {
+        font-size: 1.3rem;
+      }
+
+      .note {
+        padding: 0.9rem;
+      }
+
+      .note strong {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Red Dot Particle Background -->
+  <div id="particles-js"></div>
+
+  <!-- Notification Content -->
+  <div class="container">
+    <h2>All Notifications</h2>
+    <div id="notifications">Loading...</div>
+  </div>
+
+  <script>
+    // Firebase Config
+    
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+    // Load Notifications
+    const container = document.getElementById("notifications");
+
+    db.collection("notifications").orderBy("timestamp", "desc").get()
+      .then(snapshot => {
+        if (snapshot.empty) {
+          container.innerHTML = "<p style='color:#ccc'>No notifications yet.</p>";
+        } else {
+          container.innerHTML = "";
+          snapshot.forEach(doc => {
+            const n = doc.data();
+            const date = new Date(n.timestamp).toLocaleString();
+            container.innerHTML += `
+              <div class="note">
+                <strong>${n.title}</strong>
+                <div class="note-time">${date}</div>
+              </div>`;
+          });
+        }
+      });
+
+    // Red Dot Particles
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 50, density: { enable: true, value_area: 800 } },
+        color: { value: "#ff2c2c" },
+        shape: { type: "circle" },
+        opacity: { value: 0.4 },
+        size: { value: 3 },
+        line_linked: {
+          enable: false
+        },
+        move: {
+          enable: true,
+          speed: 1.2,
+          direction: "none",
+          random: true,
+          straight: false,
+          out_mode: "out"
+        }
+      },
+      interactivity: {
+        events: {
+          onhover: { enable: true, mode: "repulse" }
+        }
+      },
+      retina_detect: true
+    });
+  </script>
+</body>
+</html>
