@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>D46 OFFICIAL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #111;
+      color: #fff;
+      -ms-content-zooming: none;
+      touch-action: manipulation;
+      overscroll-behavior: none;
+    }
+    html, body {
+      touch-action: manipulation;
+    }
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: #1f1f1f;
+    }
+    .store-title {
+      font-size: 1.8rem;
+      background: linear-gradient(80deg, #4f46e5, #c026d3);
+      -webkit-background-clip: text;
+      color: transparent;
+      font-weight: 700;
+    }
+    .icons {
+      display: flex;
+      gap: 1rem;
+      position: relative;
+    }
+    .icon {
+      cursor: pointer;
+      font-size: 1.5rem;
+      position: relative;
+    }
+    #notif-dot {
+      display: none;
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 10px;
+      height: 10px;
+      background: red;
+      border-radius: 50%;
+    }
+    .dropdown-menu {
+      display: none;
+      flex-direction: column;
+      background: #222;
+      position: absolute;
+      top: 60px;
+      right: 1rem;
+      padding: 0.5rem;
+      border-radius: 8px;
+      z-index: 100;
+    }
+    .dropdown-menu a {
+      color: #ccc;
+      text-decoration: none;
+      margin-bottom: 0.5rem;
+    }
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 2rem 1rem;
+    }
+    .search-bar {
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+    .search-bar-inner {
+      display: flex;
+      background: #333;
+      border-radius: 50px;
+      padding: 0.2rem;
+      width: 100%;
+      max-width: 600px;
+    }
+    #searchInput {
+      flex: 1;
+      border: none;
+      border-radius: 50px 0 0 50px;
+      padding: 0.8rem;
+      background: transparent;
+      color: #fff;
+      outline: none;
+    }
+    #categorySelect {
+      border: none;
+      background: transparent;
+      color: #fff;
+      padding: 0 1rem;
+      border-radius: 0 50px 50px 0;
+      outline: none;
+    }
+    #app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      gap: 12px;
+      justify-items: center;
+    }
+    .app-card {
+      background: #1e1e1e;
+      padding: 1rem;
+      border-radius: 10px;
+      text-align: center;
+      width: 100%;
+      max-width: 120px;
+      transition: transform 0.3s ease;
+    }
+    .app-card:hover {
+      transform: scale(1.03);
+    }
+    .app-logo {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+    .app-card h3 {
+      font-size: 1rem;
+      margin: 0.5rem 0 0.2rem;
+    }
+    .app-card p {
+      font-size: 0.8rem;
+      color: #aaa;
+      margin: 0;
+    }
+    .download-btn {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.75rem;
+      background: linear-gradient(90deg, #4f46e5, #c026d3);
+      color: white;
+      text-decoration: none;
+      border-radius: 25px;
+    }
+  </style>
+</head>
+<body ongesturestart="event.preventDefault()" ongesturechange="event.preventDefault()" ongestureend="event.preventDefault()">
+  <div id="particles-js"></div>
+  <div class="header">
+    <div class="store-title">D46 OFFICIAL</div>
+    <div class="icons">
+      <div class="icon" onclick="toggleMenu()">☰</div>
+      <div class="icon" onclick="goToNotifications()">🔔<span id="notif-dot"></span></div>
+    </div>
+  </div>
+  <div class="dropdown-menu" id="dropdownMenu">
+    <a href="https://t.me/d46official" target="_blank">Telegram</a>
+    <a href="https://youtube.com/@cheatandroid4664?si=koXg5HHBWRjxWpi2" target="_blank">YouTube</a>
+    <a href="https://wa.me/62881024029045" target="_blank">Whatsapp</a>
+  </div>
+  <div class="container">
+    <div class="search-bar">
+      <div class="search-bar-inner">
+        <input type="text" id="searchInput" placeholder="Search">
+        <select id="categorySelect" onchange="filterByCategory()">
+          <option value="All">All</option>
+        </select>
+      </div>
+    </div>
+    <div id="app-grid"></div>
+  </div>
+  <script>
+    // Disable zoom via Ctrl+ and pinch
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '-' || e.key === '=')) {
+        e.preventDefault();
+      }
+    });
+    document.addEventListener('wheel', function(e) {
+      if (e.ctrlKey) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyDj9_vRv7D6JvVhppyyADcLVcL9D2fSkRQ",
+  authDomain: "admin-panel-fe36e.firebaseapp.com",
+  databaseURL: "https://admin-panel-fe36e-default-rtdb.firebaseio.com",
+  projectId: "admin-panel-fe36e",
+  storageBucket: "admin-panel-fe36e.firebasestorage.app",
+  messagingSenderId: "1086479379078",
+  appId: "1:1086479379078:web:2e0da1a78339ac16e7bf07",
+  
+};
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const appGrid = document.getElementById("app-grid");
+    const searchInput = document.getElementById("searchInput");
+    const categorySelect = document.getElementById("categorySelect");
+    let allApps = [];
+
+    db.collection("apps").onSnapshot(snapshot => {
+      allApps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      displayApps(allApps);
+    });
+
+    db.collection("categories").onSnapshot(snapshot => {
+      categorySelect.innerHTML = '<option value="All">All</option>';
+      snapshot.forEach(doc => {
+        const category = doc.data().name;
+        categorySelect.innerHTML += `<option value="${category}">${category}</option>`;
+      });
+    });
+
+    function displayApps(apps) {
+      appGrid.innerHTML = "";
+      apps.forEach(app => {
+        appGrid.innerHTML += `
+          <div class="app-card">
+            <img src="${app.logoUrl}" class="app-logo" alt="${app.name}" />
+            <h3>${app.name}</h3>
+            <p>Version: ${app.version}</p>
+            <a href="app.html?id=${app.id}" class="download-btn">Download</a>
+          </div>`;
+      });
+    }
+
+    searchInput.addEventListener("input", () => filterByCategory());
+
+    function filterByCategory() {
+      const category = categorySelect.value;
+      const keyword = searchInput.value.toLowerCase();
+      const filtered = allApps.filter(app => {
+        const matchCategory = category === "All" || app.category === category;
+        const matchKeyword = app.name.toLowerCase().includes(keyword);
+        return matchCategory && matchKeyword;
+      });
+      displayApps(filtered);
+    }
+
+    function toggleMenu() {
+      const dropdownMenu = document.getElementById("dropdownMenu");
+      dropdownMenu.style.display = dropdownMenu.style.display === "flex" ? "none" : "flex";
+    }
+
+    function goToNotifications() {
+      window.location.href = "notifications.html";
+    }
+
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 50, density: { enable: true, value_area: 800 } },
+        color: { value: "#00ff00" },
+        shape: { type: "circle" },
+        opacity: { value: 0.3 },
+        size: { value: 3 },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: "#00ff00",
+          opacity: 0.2,
+          width: 1
+        },
+        move: { enable: true, speed: 1 }
+      },
+      interactivity: {
+        events: {
+          onhover: { enable: true, mode: "repulse" }
+        }
+      },
+      retina_detect: true
+    });
+  </script>
+</body>
+</html>
